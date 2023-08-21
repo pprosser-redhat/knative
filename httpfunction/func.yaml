@@ -1,0 +1,26 @@
+specVersion: 0.35.0
+name: httpfunction
+runtime: quarkus
+registry: quay.io/philprosser
+image: quay.io/philprosser/httpfunction:latest
+imageDigest: sha256:cce68eb5b556672ea8707e36cfd0f47752227d4b6480f094d87038d950e5529b
+created: 2023-08-02T10:40:34.338475+01:00
+build:
+  builder: s2i
+  buildEnvs:
+  - name: BP_JVM_VERSION
+    value: "17"
+  - name: BP_NATIVE_IMAGE
+    value: "false"
+  - name: BP_MAVEN_BUILT_ARTIFACT
+    value: func.yaml target/quarkus-app/lib/ target/quarkus-app/*.jar target/quarkus-app/app/
+      target/quarkus-app/quarkus/
+  - name: BP_MAVEN_BUILD_ARGUMENTS
+    value: package -DskipTests=true -Dmaven.javadoc.skip=true -Dquarkus.package.type=fast-jar
+  - name: MAVEN_S2I_ARTIFACT_DIRS
+    value: target/quarkus-app
+  - name: S2I_SOURCE_DEPLOYMENTS_FILTER
+    value: lib quarkus-run.jar app quarkus
+  pvcSize: 256Mi
+deploy:
+  namespace: test
