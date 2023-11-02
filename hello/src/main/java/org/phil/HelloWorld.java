@@ -11,6 +11,6 @@ public class HelloWorld {
     @GET
     @Produces(MediaType.TEXT_PLAIN)
     public String hello() {
-        return "Hello World from a Serverless App";
+        return "Hello World from a Serverless App version 2";
     }
 }
