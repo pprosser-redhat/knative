@@ -1,13 +1,11 @@
 specVersion: 0.35.0
-name: cefunction
+name: myfunction
 runtime: quarkus
 registry: quay.io/philprosser
-image: quay.io/philprosser/cefunction:v1
-imageDigest: sha256:a3b44762ec32a726cfcbf6f359c643cf7b3b0dc3d732eae6f04c6a8ef4d52791
-created: 2023-08-02T11:40:50.435524+01:00
+image: quay.io/philprosser/myfunction:latest
+created: 2023-11-02T17:41:53.474365Z
 invoke: cloudevent
 build:
-  builder: s2i
   buildEnvs:
   - name: BP_JVM_VERSION
     value: "17"
@@ -23,5 +21,3 @@ build:
   - name: S2I_SOURCE_DEPLOYMENTS_FILTER
     value: lib quarkus-run.jar app quarkus
   pvcSize: 256Mi
-deploy:
-  namespace: my-serverless-demo

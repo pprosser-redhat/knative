@@ -1,0 +1,14 @@
+apiVersion: camel.apache.org/v1alpha1
+kind: KameletBinding
+metadata:
+  name: route-2643
+spec:
+  source:
+    properties:
+      type: phil.camel.test
+    ref:
+      apiVersion: eventing.knative.dev/v1
+      kind: Broker
+      name: knative
+    types: {}
+  sink: null

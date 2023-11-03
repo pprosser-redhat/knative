@@ -1,14 +1,5 @@
 # Function project
 
-Build Quarkus native 
-
-quarkus build --native --no-tests -Dquarkus.native.remote-container-build=true
-
-deploy native version
-
-kn func deploy -i quay.io/philprosser/cefunction:v1
-kn func invoke
-
 Welcome to your new Quarkus function project!
 
 This sample project contains a single function: `functions.Function.function()`,
@@ -30,7 +21,7 @@ It's recommended to set `FUNC_REGISTRY` environment variable.
 ```shell script
 # replace ~/.bashrc by your shell rc file
 # replace docker.io/johndoe with your registry
-export FUNC_REGISTRY=quay.io/philprosser
+export FUNC_REGISTRY=docker.io/johndoe
 echo "export FUNC_REGISTRY=docker.io/johndoe" >> ~/.bashrc 
 ```
 
@@ -58,10 +49,6 @@ buildEnvs:
     value: '*-runner.jar'
 ```
 
-### Native build
-
-podman build -f src/main/docker/Dockerfile.native-micro -t quay.io/philprosser/cefunction:v1 .
-
 ### Running
 
 This command runs the function locally in a container
@@ -70,6 +57,10 @@ using the image created above.
 func run
 ```
 
+### Note to self
+
+If you don't put quay.io creds into OpenShift then you have to make the repo public on quay.io
+
 ### Deploying
 
 This commands will build and deploy the function into cluster.
@@ -77,6 +68,19 @@ This commands will build and deploy the function into cluster.
 ```shell script
 func deploy # also triggers build
 ```
+
+```
+kn func deploy -i quay.io/philprosser/myfunction:1 -v
+```
+```
+kn func deploy --build=false -i quay.io/philprosser/myfunction:1 -v
+```
+
+###
+
+For Quarkus function, need to add OCP container registry to props file
+
+quarkus.container-image.registry=image-registry.openshift-image-registry.svc:5000
 
 ## Function invocation
 
@@ -113,25 +117,27 @@ http -v ${URL} \
   message=$(whoami)
 ```
 
+### Added for Phils demo
+
 URL=http://cefunction-test.apps.coffee.demolab.local/
 
 ### cURL
 
 ```shell script
-URL=http://cefunction-test.apps.coffee.demolab.local/
-curl -v "http://cefunction-test.apps.coffee.demolab.local/" \
+URL=https://myfunction-my-serverless-demo.apps.cluster-4kf2q.dynamic.opentlc.com/
+curl -v "https://myfunction-my-serverless-demo.apps.cluster-4kf2q.dynamic.opentlc.com/" \
   -H "Content-Type:application/json" \
   -H "Ce-Id:1" \
-  -H "Ce-Source:cloud-event-example" \
+  -H "Ce-Source:function" \
   -H "Ce-Type:phil.camel.event" \
   -H "Ce-Specversion:1.0" \
   -d "{\"message\": \"$(whoami)\", \"name\": \"Phil\" }\""
 ```
 ```
-curl -v "http://localhost:8080/" \
+curl -v "https://myfunction-my-serverless-demo.apps.cluster-4kf2q.dynamic.opentlc.com/" \
   -H "Content-Type:application/json" \
   -H "Ce-Id:1" \
-  -H "Ce-Source:cloud-event-example" \
+  -H "Ce-Source:function" \
   -H "Ce-Type:phil.camel.event" \
   -H "Ce-Specversion:1.0" \
   -d "{\"message\": \"$(whoami)\", \"name\": \"Phil P\" }\""
@@ -171,28 +177,43 @@ spec:
   add filter in the yaml
 
       attributes:
-      source: /apis/v1/namespaces/my-serverless-demo/pingsources/ping-source
+      source: /apis/v1/namespaces/test/pingsources/ping-source
       type: dev.knative.sources.ping
 
 
-
-
+### Log sink
+``````
+apiVersion: camel.apache.org/v1alpha1
+kind: KameletBinding
+metadata:
+  name: kamelet-log-sink
+  namespace: my-serverless-demo
+  labels:
+    app: kamelet-log-sink
+    app.kubernetes.io/component: kamelet-log-sink
+    app.kubernetes.io/instance: kamelet-log-sink
+    app.kubernetes.io/name: kamelet-log-sink
+spec:
+  sink:
+    ref:
+      apiVersion: camel.apache.org/v1alpha1
+      kind: Kamelet
+      name: log-sink
+  source:
+    properties:
+      type: function.output
+    ref:
+      apiVersion: eventing.knative.dev/v1
+      kind: Broker
+      name: philsbroker
+```
 
 ```
 apiVersion: camel.apache.org/v1alpha1
 kind: KameletBinding
 metadata:
-  name: sendfromcamel
+  name: route-phil
 spec:
-  source:
-    properties:
-      message: "{\"message\": \"Hello\", \"name\": \"Phil P\" }"
-      contentType: application/json
-    ref:
-      apiVersion: camel.apache.org/v1alpha1
-      kind: Kamelet
-      name: timer-source
-    types: {}
   sink:
     properties:
       type: phil.camel.test
@@ -200,6 +221,21 @@ spec:
       apiVersion: eventing.knative.dev/v1
       kind: Broker
       name: philsbroker
+  source:
+    properties:
+      contentType: application/json
+      message: '{"message": "Hello world!"}'
+      period: 1
+    ref:
+      apiVersion: camel.apache.org/v1alpha1
+      kind: Kamelet
+      name: timer-source
     types: {}
-```
+  steps:
+    - to:
+        uri: kamelet:log-action
+        id: to-ae0e
+        parameters:
+          showBody: true
 
+```

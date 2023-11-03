@@ -11,10 +11,14 @@
         - to:
             uri: kamelet:log-action
             id: to-ae0e
+            parameters:
+              showBody: true
         - to:
-            uri: knative:event/phil.camel.event
+            uri: knative
             id: to-4b6f
             parameters:
               kind: Broker
               apiVersion: eventing.knative.dev/v1
               name: philbroker
+              type: event
+              typeId: phil.camel.event

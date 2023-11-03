@@ -8,8 +8,6 @@ quarkus build --native --no-tests -Dquarkus.native.container-build=true -Dquarku
 
 to create new revision, update pom VERSION to create new image tag
 
-deploy again and update the knative configuration to recognise the 2 revisions
- - need to update the service manually back to version one so the revisions are deployed. Quakus does a totally redeploy
 
 
 
