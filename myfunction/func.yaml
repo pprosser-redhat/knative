@@ -2,10 +2,12 @@ specVersion: 0.35.0
 name: myfunction
 runtime: quarkus
 registry: quay.io/philprosser
-image: quay.io/philprosser/myfunction:latest
+image: quay.io/philprosser/myfunction:1
+imageDigest: sha256:8813ccde881ed469eddc196ae82b7e638cbe480531ccb1fe33a10c5147ac6751
 created: 2023-11-02T17:41:53.474365Z
 invoke: cloudevent
 build:
+  builder: s2i
   buildEnvs:
   - name: BP_JVM_VERSION
     value: "17"
@@ -21,3 +23,5 @@ build:
   - name: S2I_SOURCE_DEPLOYMENTS_FILTER
     value: lib quarkus-run.jar app quarkus
   pvcSize: 256Mi
+deploy:
+  namespace: my-serverless-demo
