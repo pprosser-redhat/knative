@@ -111,7 +111,7 @@ kn source ping create sendtobroker --schedule "*/1 * * * *" --data '{"message": 
 * Create a trigger to myfunction
 
 ```
-kn trigger create pingsourceevents --broker philsbroker --filter type=phil.camel.test --sink ksvc:myfunction
+kn trigger create sourceevents --broker philsbroker --filter type=phil.camel.test --sink ksvc:myfunction
 ```
 
 * Try sending a curl command to the broker - do this in the camel pod created earlier 
@@ -119,15 +119,13 @@ kn trigger create pingsourceevents --broker philsbroker --filter type=phil.camel
 ```
 oc rsh deployment/sendfromcamel && \
 curl -v "http://broker-ingress.knative-eventing.svc.cluster.local/my-serverless-demo/philsbroker" \
--X POST \
--H "Ce-Id: fromcurl" \
--H "Ce-Specversion: 1.0" \
--H "Ce-Type: phil.camel.test" \
--H "Ce-Source: mycurl" \
--H "Content-Type: application/json" \
--d '{"message": "Hello", "name": "curl source by Phil" }'
+  -H "Content-Type:application/json" \
+  -H "Ce-Id:1" \
+  -H "Ce-Source:curl" \
+  -H "Ce-Type:phil.camel.test" \
+  -H "Ce-Specversion:1.0" \
+  -d "{\"message\": \"curled through broker\", \"name\": \"Phil\" }\""
 ```
-
 * Create another subscription using the topology viewer to receieve output async from function 
 
  1. Create event sink 
