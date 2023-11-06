@@ -90,7 +90,18 @@ curl -v "$URL" \
 kn broker create philsbroker
 ```
 
-* Create a ping source to send data to the broker
+
+* To generate events, deploy the camel k binding  (preferrred approach for demo)
+
+this is in the folde camel
+
+cd folder camel
+
+```
+oc apply -f kbtest.camel.yaml
+```
+
+* Create a ping source to send data to the broker (don't do)
 
 ```
 kn source ping create sendtobroker --schedule "*/1 * * * *" --data '{"message": "Hello", "name": "ping source" }' --sink broker:philsbroker
@@ -100,20 +111,39 @@ kn source ping create sendtobroker --schedule "*/1 * * * *" --data '{"message": 
 * Create a trigger to myfunction
 
 ```
-kn trigger create pingsourceevents --broker philsbroker --filter type=dev.knative.sources.ping --sink ksvc:myfunction
+kn trigger create pingsourceevents --broker philsbroker --filter type=phil.camel.test --sink ksvc:myfunction
 ```
 
-* Try sending a curl command to the broker 
+* Try sending a curl command to the broker - do this in the camel pod created earlier 
 
 ```
+oc rsh deployment/sendfromcamel && \
 curl -v "http://broker-ingress.knative-eventing.svc.cluster.local/my-serverless-demo/philsbroker" \
 -X POST \
 -H "Ce-Id: fromcurl" \
 -H "Ce-Specversion: 1.0" \
--H "Ce-Type: dev.knative.sources.ping" \
+-H "Ce-Type: phil.camel.test" \
 -H "Ce-Source: mycurl" \
 -H "Content-Type: application/json" \
--d '{"message": "Hello", "name": "curl source" }'
+-d '{"message": "Hello", "name": "curl source by Phil" }'
 ```
+
+* Create another subscription using the topology viewer to receieve output async from function 
+
+ 1. Create event sink 
+ 2. choose log sink
+ 3. select form view
+ 4. In yaml view, under source, make it look like 
+
+ ```
+   source:
+    properties: 
+      type: function.output
+    ref:
+      apiVersion: eventing.knative.dev/v1
+      kind: Broker
+      name: philsbroker
+ ```
+
 
 

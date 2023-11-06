@@ -5,7 +5,8 @@ metadata:
 spec:
   source:
     properties:
-      message: "{\"message\": \"Hello\", \"name\": \"Phil P\" }"
+      period: 90000
+      message: "{\"message\": \"Hello from Camel\", \"name\": \"Phil P\" }"
       contentType: application/json
     ref:
       apiVersion: camel.apache.org/v1alpha1
