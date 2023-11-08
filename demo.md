@@ -1,5 +1,11 @@
 # My simple serverless demo.
 
+# To make scale to zero happend faster, add the following to the Knativeserving crd
+
+  config:
+    autoscaler:
+      scale-to-zero-grace-period: 10s
+
 ## Serverless of a simple restful service
 
 Show the code inside the hello folder. This is a simple Quarkus restful service.... nothing to do with serverless
