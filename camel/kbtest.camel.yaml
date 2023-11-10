@@ -1,17 +1,24 @@
 apiVersion: camel.apache.org/v1alpha1
 kind: KameletBinding
 metadata:
-  name: sendfromcamel
+  name: route-1390
 spec:
   source:
     properties:
-      period: 90000
+      period: 15000
       message: "{\"message\": \"Hello from Camel\", \"name\": \"Phil P\" }"
       contentType: application/json
     ref:
       apiVersion: camel.apache.org/v1alpha1
       kind: Kamelet
       name: timer-source
+    types: {}
+  steps:
+  - properties: {}
+    ref:
+      apiVersion: camel.apache.org/v1alpha1
+      kind: Kamelet
+      name: log-action
     types: {}
   sink:
     properties:

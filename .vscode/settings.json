@@ -1,3 +1,7 @@
 {
-    "java.configuration.updateBuildConfiguration": "interactive"
+    "java.configuration.updateBuildConfiguration": "interactive",
+    "java.project.referencedLibraries": [
+        "lib/**/*.jar",
+        "/Users/pprosser/Library/Application Support/Code/User/globalStorage/redhat.vscode-camelk/java-dependencies/*.jar"
+    ]
 }

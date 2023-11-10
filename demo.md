@@ -90,10 +90,62 @@ curl -v "$URL" \
 
 ## Serverless event driven demo 
 
-* Deploy a Broker 
+* Deploy a Broker using inmemorybroker
 
 ```
 kn broker create philsbroker
+```
+
+* Deploy Broker with Kafka
+
+Prereqs
+
+Install AMQ Streams and create a Broker cluster
+
+and then setup the knative eventing operator for kafka integration using the KnativeKafka CRD, somethinmg like below
+
+```
+apiVersion: operator.serverless.openshift.io/v1alpha1
+kind: KnativeKafka
+metadata:
+  name: knative-kafka
+  namespace: knative-eventing
+spec:
+  broker:
+    defaultConfig:
+      authSecretName: ''
+      bootstrapServers: 'my-cluster-kafka-bootstrap.my-serverless-demo.svc:9092'
+      numPartitions: 10
+      replicationFactor: 3
+    enabled: true
+  channel:
+    authSecretName: ''
+    authSecretNamespace: ''
+    bootstrapServers: 'my-cluster-kafka-bootstrap.my-serverless-demo.svc:9092'
+    enabled: true
+  high-availability:
+    replicas: 1
+  logging:
+    level: INFO
+  sink:
+    enabled: true
+  source:
+    enabled: true
+```
+and then you can deploy the broker below during the demo
+```
+apiVersion: eventing.knative.dev/v1
+kind: Broker
+metadata:
+  annotations:
+    eventing.knative.dev/broker.class: Kafka 
+  name: philsbroker
+spec:
+  config:
+    apiVersion: v1
+    kind: ConfigMap
+    name: kafka-broker-config 
+    namespace: knative-eventing
 ```
 
 
