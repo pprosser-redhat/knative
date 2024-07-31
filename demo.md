@@ -115,7 +115,7 @@ spec:
     enabled: true
     defaultConfig:
       numPartitions: 10
-      replicationFactor: 1
+      replicationFactor: 3
       bootstrapServers: my-cluster-kafka-bootstrap.my-serverless-demo.svc.cluster.local:9092
   source:
     enabled: false
