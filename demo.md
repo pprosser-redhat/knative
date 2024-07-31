@@ -118,11 +118,11 @@ spec:
       replicationFactor: 3
       bootstrapServers: my-cluster-kafka-bootstrap.my-serverless-demo.svc.cluster.local:9092
   source:
-    enabled: false
+    enabled: true
   sink:
-    enabled: false
+    enabled: true
   channel:
-    enabled: false
+    enabled: true
     bootstrapServers: my-cluster-kafka-bootstrap.my-serverless-demo.svc.cluster.local:9092
 ```
 and then you can deploy the broker below during the demo either via the cli or on topology viewer in the console
