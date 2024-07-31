@@ -186,11 +186,12 @@ curl -v "http://kafka-broker-ingress.knative-eventing.svc.cluster.local/my-serve
 kn trigger create sourceevents --broker philsbroker --filter type=phil.camel.test --sink ksvc:myfunction
 ```
 
-**if you want to show the messages in Kafka, then go into the terminal window of one of the brokers and run
+**if you want to show the messages in Kafka, then go a terminal window 
 
-If will show the cloudevent headers used by Knative eventing as well
 
 ```
+oc rsh my-cluster-kafka-0
+bin/kafka-topics.sh --bootstrap-server localhost:9092 --list
 bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic knative-broker-my-serverless-demo-philsbroker --from-beginning --property print.headers=true
 ```
 
