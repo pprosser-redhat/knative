@@ -19,7 +19,7 @@ kn service create hello --scale-metric rps --scale-target 20 --image quay.io/phi
 * Test out the service using curl
 
 ```
-curl https://hello-my-serverless-demo.apps.cluster-4kf2q.dynamic.opentlc.com/hello
+curl https://hello-my-serverless-demo.apps.coffee.demolab.local/hello
 ```
 
 * Wait for the service to stop before running curl again (about 30 seconds)
@@ -41,7 +41,7 @@ kn service update hello --traffic hello-00002=100
 * Run simple scale test using requests per second, chanage the request per second up and down - 10, 30, 85
 
 ```
-curl -L https://goo.gl/S1Dc3R | bash -s 10 "https://hello-my-serverless-demo.apps.cluster-4kf2q.dynamic.opentlc.com/hello"
+curl -L https://goo.gl/S1Dc3R | bash -s 10 "https://hello-my-serverless-demo.apps.coffee.demolab.local/hello"
 ```
 
 ## Serverless demo using Functions 
@@ -78,7 +78,7 @@ Ce-Source is used to determine the function/method to use
 or /function on the URL
 
 ```
-URL=https://myfunction-my-serverless-demo.apps.cluster-4kf2q.dynamic.opentlc.com/ &&
+URL=https://myfunction-my-serverless-demo.apps.coffee.demolab.local/ &&
 curl -v "$URL" \
   -H "Content-Type:application/json" \
   -H "Ce-Id:1" \
@@ -90,7 +90,7 @@ curl -v "$URL" \
 
 ## Serverless event driven demo 
 
-* Deploy a Broker using inmemorybroker
+* Deploy a Broker using inmemorybroker - note, the instructions are not geared up for this, they are written to use with Kafka
 
 ```
 kn broker create philsbroker
@@ -105,34 +105,34 @@ Install AMQ Streams and create a Broker cluster
 and then setup the knative eventing operator for kafka integration using the KnativeKafka CRD, somethinmg like below
 
 ```
-apiVersion: operator.serverless.openshift.io/v1alpha1
 kind: KnativeKafka
+apiVersion: operator.serverless.openshift.io/v1alpha1
 metadata:
   name: knative-kafka
   namespace: knative-eventing
 spec:
   broker:
+    enabled: true
     defaultConfig:
-      authSecretName: ''
-      bootstrapServers: 'my-cluster-kafka-bootstrap.my-serverless-demo.svc:9092'
       numPartitions: 10
-      replicationFactor: 3
-    enabled: true
-  channel:
-    authSecretName: ''
-    authSecretNamespace: ''
-    bootstrapServers: 'my-cluster-kafka-bootstrap.my-serverless-demo.svc:9092'
-    enabled: true
-  high-availability:
-    replicas: 1
-  logging:
-    level: INFO
-  sink:
-    enabled: true
+      replicationFactor: 1
+      bootstrapServers: my-cluster-kafka-bootstrap.my-serverless-demo.svc.cluster.local:9092
   source:
-    enabled: true
+    enabled: false
+  sink:
+    enabled: false
+  channel:
+    enabled: false
+    bootstrapServers: my-cluster-kafka-bootstrap.my-serverless-demo.svc.cluster.local:9092
 ```
-and then you can deploy the broker below during the demo
+and then you can deploy the broker below during the demo either via the cli or on topology viewer in the console
+
+**via the cli**
+
+```
+kn broker create philsbroker --namespace my-serverless-demo --class Kafka --broker-config cm:kafka-broker-config:knative-eventing
+```
+**via the topology viewer**
 ```
 apiVersion: eventing.knative.dev/v1
 kind: Broker
@@ -147,36 +147,18 @@ spec:
     name: kafka-broker-config 
     namespace: knative-eventing
 ```
-
-
-* To generate events, deploy the camel k binding  (preferrred approach for demo)
-
-this is in the folde camel
-
-cd folder camel
+**To allow events to be sent from outside the broker, create a http route for the service**
 
 ```
-oc apply -f kbtest.camel.yaml
+oc -n knative-eventing create route edge knativeevent --service=kafka-broker-ingress
 ```
 
-* Create a ping source to send data to the broker (don't do)
+**Let's test the eventing**
+
+* If a HTTP route has been created then try this 
 
 ```
-kn source ping create sendtobroker --schedule "*/1 * * * *" --data '{"message": "Hello", "name": "ping source" }' --sink broker:philsbroker
-```
-
-
-* Create a trigger to myfunction
-
-```
-kn trigger create sourceevents --broker philsbroker --filter type=phil.camel.test --sink ksvc:myfunction
-```
-
-* Try sending a curl command to the broker - do this in the camel pod created earlier 
-
-```
-oc rsh deployment/sendfromcamel && \
-curl -v "http://broker-ingress.knative-eventing.svc.cluster.local/my-serverless-demo/philsbroker" \
+curl -v "https://knativeevent-knative-eventing.apps.coffee.demolab.local/my-serverless-demo/philsbroker" \
   -H "Content-Type:application/json" \
   -H "Ce-Id:1" \
   -H "Ce-Source:curl" \
@@ -184,6 +166,46 @@ curl -v "http://broker-ingress.knative-eventing.svc.cluster.local/my-serverless-
   -H "Ce-Specversion:1.0" \
   -d "{\"message\": \"curled through broker\", \"name\": \"Phil\" }\""
 ```
+
+* if no http route is available then try this
+
+```
+oc rsh deployment/send-messages && \
+curl -v "http://kafka-broker-ingress.knative-eventing.svc.cluster.local/my-serverless-demo/philsbroker" \
+  -H "Content-Type:application/json" \
+  -H "Ce-Id:1" \
+  -H "Ce-Source:curl" \
+  -H "Ce-Type:phil.camel.test" \
+  -H "Ce-Specversion:1.0" \
+  -d "{\"message\": \"curled through broker\", \"name\": \"Phil\" }\""
+```
+
+* Create a trigger to myfunction
+
+```
+kn trigger create sourceevents --broker philsbroker --filter type=phil.camel.test --sink ksvc:myfunction
+```
+
+**if you want to show the messages in Kafka, then go into the terminal window of one of the brokers and run
+
+If will show the cloudevent headers used by Knative eventing as well
+
+```
+bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic knative-broker-my-serverless-demo-philsbroker --from-beginning --property print.headers=true
+```
+
+
+
+* To generate events, deploy the camel k binding  (preferrred approach for demo)
+
+this is in the folder camel
+
+cd folder camel
+
+```
+oc apply -f sendmessages-pipe.yaml
+```
+
 * Create another subscription using the topology viewer to receieve output async from function 
 
  1. Create event sink 
