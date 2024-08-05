@@ -13,13 +13,13 @@ Show the code inside the hello folder. This is a simple Quarkus restful service.
 * Having shown the code, lets deploy the application to OpenShift using the kn cli and the image from quay.
 
 ```
-kn service create hello --scale-metric rps --scale-target 20 --image quay.io/philprosser/hello:1
+kn service create hello --scale-metric rps --scale-target 20 --scale-window 10s --image quay.io/philprosser/hello:1
 ```
 
 * Test out the service using curl
 
 ```
-curl https://hello-my-serverless-demo.apps.coffee.demolab.local/hello
+curl https://hello-my-serverless-demo.apps.cluster-pb8xm.pb8xm.sandbox1517.opentlc.com/hello
 ```
 
 * Wait for the service to stop before running curl again (about 30 seconds)
@@ -41,7 +41,8 @@ kn service update hello --traffic hello-00002=100
 * Run simple scale test using requests per second, chanage the request per second up and down - 10, 30, 85
 
 ```
-curl -L https://goo.gl/S1Dc3R | bash -s 10 "https://hello-my-serverless-demo.apps.coffee.demolab.local/hello"
+export RATE=10
+curl -L https://goo.gl/S1Dc3R | bash -s $RATE "https://hello-my-serverless-demo.apps.cluster-pb8xm.pb8xm.sandbox1517.opentlc.com/hello"
 ```
 
 ## Serverless demo using Functions 
@@ -69,7 +70,7 @@ kn func deploy --build=false -i quay.io/philprosser/myfunction:1 -v
 or for speed, using kn service deploy straight from the image
 
 ```
-kn service create myfunction  --image quay.io/philprosser/myfunction:1
+kn service create myfunction --scale-window 10s  --image quay.io/philprosser/myfunction:1
 ```
 
 * Test the function 
@@ -78,7 +79,7 @@ Ce-Source is used to determine the function/method to use
 or /function on the URL
 
 ```
-URL=https://myfunction-my-serverless-demo.apps.coffee.demolab.local/ &&
+URL=https://myfunction-my-serverless-demo.apps.cluster-pb8xm.pb8xm.sandbox1517.opentlc.com/ &&
 curl -v "$URL" \
   -H "Content-Type:application/json" \
   -H "Ce-Id:1" \
@@ -86,6 +87,12 @@ curl -v "$URL" \
   -H "Ce-Type:phil.camel.event" \
   -H "Ce-Specversion:1.0" \
   -d "{\"message\": \"$(whoami)\", \"name\": \"Phil\" }\""
+```
+
+
+If you want to do some scale test with the function and the broker
+```
+kn service update myfunction --scale-metric rps --scale-target 20
 ```
 
 ## Serverless event driven demo 
@@ -101,6 +108,8 @@ kn broker create philsbroker
 Prereqs
 
 Install AMQ Streams and create a Broker cluster
+
+
 
 and then setup the knative eventing operator for kafka integration using the KnativeKafka CRD, somethinmg like below
 
@@ -158,7 +167,7 @@ oc -n knative-eventing create route edge knativeevent --service=kafka-broker-ing
 * If a HTTP route has been created then try this 
 
 ```
-curl -v "https://knativeevent-knative-eventing.apps.coffee.demolab.local/my-serverless-demo/philsbroker" \
+curl -v "https://knativeevent-knative-eventing.apps.cluster-pb8xm.pb8xm.sandbox1517.opentlc.com/my-serverless-demo/philsbroker" \
   -H "Content-Type:application/json" \
   -H "Ce-Id:1" \
   -H "Ce-Source:curl" \
@@ -223,6 +232,5 @@ oc apply -f sendmessages-pipe.yaml
       kind: Broker
       name: philsbroker
  ```
-
 
 

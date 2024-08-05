@@ -12,7 +12,7 @@ spec:
     properties:
       contentType: application/json
       message: test
-      period: 2000
+      period: "1000"
     ref:
       apiVersion: camel.apache.org/v1
       kind: Kamelet
