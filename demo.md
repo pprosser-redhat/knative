@@ -204,18 +204,6 @@ bin/kafka-topics.sh --bootstrap-server localhost:9092 --list
 bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic knative-broker-my-serverless-demo-philsbroker --from-beginning --property print.headers=true
 ```
 
-
-
-* To generate events, deploy the camel k binding  (preferrred approach for demo)
-
-this is in the folder camel
-
-cd folder camel
-
-```
-oc apply -f sendmessages-pipe.yaml
-```
-
 * Create another subscription using the topology viewer to receieve output async from function 
 
  1. Create event sink 
@@ -233,4 +221,26 @@ oc apply -f sendmessages-pipe.yaml
       name: philsbroker
  ```
 
+* To generate events, deploy the camel k binding  (preferrred approach for demo)
 
+this is in the folder camel
+
+cd folder camel
+
+```
+oc apply -f sendmessages-pipe.yaml
+```
+
+If you want to demonstrate the function autoscaling, then update the knative service
+
+```
+kn service update myfunction --scale-metric rps --scale-target 20
+```
+
+edit, the send-messages-pipe.yaml to increase the messages per second time in milliseconds e.g. send one every 50 milliseconds
+
+redeploy
+
+```
+oc apply -f sendmessages-pipe.yaml
+```
