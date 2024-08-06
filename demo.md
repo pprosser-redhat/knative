@@ -27,7 +27,7 @@ curl https://hello-my-serverless-demo.apps.cluster-pb8xm.pb8xm.sandbox1517.opent
 * Deploy a second revision of the service 
 
 ```
-kn service update hello --image quay.io/philprosser/hello:2 --traffic hello-00001=50,hello-00002=50
+kn service update hello --image quay.io/philprosser/hello:2 --scale-window 20s --traffic hello-00001=50,hello-00002=50
 ```
 
 * Retest the service using the curl above, show see it flip between versions
