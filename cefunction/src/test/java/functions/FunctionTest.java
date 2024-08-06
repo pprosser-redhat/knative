@@ -13,13 +13,13 @@ import static org.hamcrest.Matchers.notNullValue;
 @QuarkusTest
 public class FunctionTest {
 
-   /*  @Test
+    @Test
     void testFunction() {
         Output output = (new Function()).function(CloudEventBuilder.create().build(new Input("Hello!"))).data();
         Assertions.assertEquals("Hello!", output.getMessage());
-    } */
+    }
 
-   /*  @Test
+    @Test
     public void testFunctionIntegration() {
         RestAssured.given().contentType("application/json")
                 .body("{\"message\": \"Hello!\"}")
@@ -32,6 +32,6 @@ public class FunctionTest {
                 .header("ce-source", equalTo("function"))
                 .header("ce-type", equalTo("function.output"))
                 .body("message", equalTo("Hello!"));
-    } */
+    }
 
 }

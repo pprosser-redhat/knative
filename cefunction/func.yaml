@@ -1,27 +1,17 @@
-specVersion: 0.35.0
+specVersion: 0.36.0
 name: cefunction
 runtime: quarkus
 registry: quay.io/philprosser
-image: quay.io/philprosser/cefunction:v1
-imageDigest: sha256:a3b44762ec32a726cfcbf6f359c643cf7b3b0dc3d732eae6f04c6a8ef4d52791
-created: 2023-08-02T11:40:50.435524+01:00
+created: 2024-08-06T16:43:13.502237+01:00
 invoke: cloudevent
 build:
   builder: s2i
   buildEnvs:
-  - name: BP_JVM_VERSION
-    value: "17"
   - name: BP_NATIVE_IMAGE
     value: "false"
-  - name: BP_MAVEN_BUILT_ARTIFACT
-    value: func.yaml target/quarkus-app/lib/ target/quarkus-app/*.jar target/quarkus-app/app/
-      target/quarkus-app/quarkus/
-  - name: BP_MAVEN_BUILD_ARGUMENTS
-    value: package -DskipTests=true -Dmaven.javadoc.skip=true -Dquarkus.package.type=fast-jar
+  - name: BP_JVM_VERSION
+    value: "21"
   - name: MAVEN_S2I_ARTIFACT_DIRS
     value: target/quarkus-app
   - name: S2I_SOURCE_DEPLOYMENTS_FILTER
     value: lib quarkus-run.jar app quarkus
-  pvcSize: 256Mi
-deploy:
-  namespace: my-serverless-demo

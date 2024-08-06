@@ -17,11 +17,11 @@ public class Function {
      */
     @Funq
     public CloudEvent<Output> function(CloudEvent<Input> input) {
-    
+
         // Add your business logic here
-        System.out.println(input.data().toString());
-       
-        Output output = new Output(input.data().getMessage() + " " + input.data().getName());
+
+        System.out.println(input);
+        Output output = new Output(input.data().getMessage());
         return CloudEventBuilder.create().build(output);
     }
 
